@@ -1,12 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chapter Member Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    .card {
+      max-width: 420px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      background: #000;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .ACTIVE { background: #d4edda; }
+    .INACTIVE { background: #fff3cd; }
+    .SUSPENDED, .EXPELLED { background: #f8d7da; }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h2>Member Verification</h2>
+    <input type="text" id="memberId" placeholder="Enter Member ID">
+    <button onclick="verify()">Verify</button>
+    <div id="output"></div>
+  </div>
+
 <script>
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1NTDDp-Ow6-HTgChNrH85WpWpw80EMEA-ZpjpgYe674k/export?format=csv";
 
 function verify() {
-  const input = document.getElementById("memberId");
+  const id = document.getElementById("memberId").value.trim();
   const output = document.getElementById("output");
-  const id = input.value.trim();
 
-  if (id === "") {
+  if (!id) {
     output.innerHTML = "<div class='result EXPELLED'>PLEASE ENTER MEMBER ID</div>";
     return;
   }
@@ -20,28 +74,18 @@ function verify() {
       rows.forEach(row => {
         const cols = row.split(",");
 
-        const memberId = cols[0]?.trim();
-
-        if (memberId === id) {
+        if (cols[0] && cols[0].trim() === id) {
           found = true;
 
-          const fullName   = cols[1];
-          const codeName   = cols[2];
-          const gt         = cols[3];
-          const dateSurvive= cols[4];
-          const status     = cols[5];
-          const remark     = cols[6];
-          const position   = cols[7];
-
           output.innerHTML = `
-            <div class="result ${status}">
-              <strong>Status: ${status}</strong><br><br>
-              <b>Full Name:</b> ${fullName}<br>
-              <b>Alexis / Medusa Name:</b> ${codeName}<br>
-              <b>GT:</b> ${gt}<br>
-              <b>Position:</b> ${position}<br>
-              <b>Date Survive:</b> ${dateSurvive}<br>
-              <b>Remarks:</b> ${remark}
+            <div class="result ${cols[5]}">
+              <strong>Status:</strong> ${cols[5]}<br><br>
+              <b>Full Name:</b> ${cols[1]}<br>
+              <b>Alexis / Medusa Name:</b> ${cols[2]}<br>
+              <b>GT:</b> ${cols[3]}<br>
+              <b>Date Survive:</b> ${cols[4]}<br>
+              <b>Position:</b> ${cols[7]}<br>
+              <b>Remarks:</b> ${cols[6]}
             </div>
           `;
         }
@@ -57,3 +101,6 @@ function verify() {
     });
 }
 </script>
+
+</body>
+</html>
