@@ -1,63 +1,98 @@
-<script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1NTDDp-Ow6-HTgChNrH85WpWpw80EMEA-ZpjpgYe674k/export?format=csv";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chapter Member Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
 
-function getQueryParam(name) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(name);
-}
+  <h2>Chapter Member Verification</h2>
 
-function verify(memberIdFromQR = null) {
-  const input = document.getElementById("memberId");
-  const output = document.getElementById("output");
+  <!-- INPUT + BUTTON -->
+  <input type="text" id="memberId" placeholder="Enter Member ID">
+  <button onclick="verify()">Verify</button>
 
-  const id = memberIdFromQR || input.value.trim();
+  <!-- RESULT -->
+  <div id="output"></div>
 
-  if (!id) {
-    output.innerHTML = "<div class='result EXPELLED'>PLEASE ENTER MEMBER ID</div>";
-    return;
-  }
+  <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1NTDDp-Ow6-HTgChNrH85WpWpw80EMEA-ZpjpgYe674k/export?format=csv";
 
-  fetch(SHEET_URL)
-    .then(res => res.text())
-    .then(text => {
-      const rows = text.replace(/\r/g, "").split("\n").slice(1);
-      let found = false;
+    function verify(memberIdFromQR = null) {
+      const input = document.getElementById("memberId");
+      const output = document.getElementById("output");
 
-      rows.forEach(row => {
-        const cols = row.split(",");
+      const id = memberIdFromQR || input.value.trim();
 
-        if (cols[0] && cols[0].trim() === id) {
-          found = true;
-
-          output.innerHTML = `
-            <div class="result ${cols[5]}">
-              <strong>Status:</strong> ${cols[5]}<br><br>
-              <b>Full Name:</b> ${cols[1]}<br>
-              <b>Alexis / Medusa Name:</b> ${cols[2]}<br>
-              <b>GT:</b> ${cols[3]}<br>
-              <b>Date Survive:</b> ${cols[4]}<br>
-              <b>Position:</b> ${cols[7]}<br>
-              <b>Remarks:</b> ${cols[6]}
-            </div>
-          `;
-        }
-      });
-
-      if (!found) {
-        output.innerHTML = "<div class='result EXPELLED'>MEMBER NOT FOUND</div>";
+      if (!id) {
+        output.innerHTML = "PLEASE ENTER MEMBER ID";
+        return;
       }
-    })
-    .catch(() => {
-      output.innerHTML = "<div class='result EXPELLED'>ERROR LOADING DATA</div>";
-    });
-}
 
-// AUTO VERIFY IF FROM QR
-window.onload = () => {
-  const qrId = getQueryParam("id");
-  if (qrId) {
-    document.getElementById("memberId").value = qrId;
-    verify(qrId);
-  }
-};
-</script>
+      fetch(SHEET_URL)
+        .then(r => r.text())
+        .then(text => {
+          const rows = text.split("\n").slice(1);
+          let found = false;
+
+          for (let row of rows) {
+            const cols = row.split(",");
+
+            if (cols[0] && cols[0].trim() === id) {
+              found = true;
+              output.innerHTML = `
+                <b>Status:</b> ${cols[5]}<br>
+                <b>Full Name:</b> ${cols[1]}<br>
+                <b>Alexis / Medusa:</b> ${cols[2]}<br>
+                <b>GT:</b> ${cols[3]}<br>
+                <b>Date Survive:</b> ${cols[4]}<br>
+                <b>Position:</b> ${cols[7]}<br>
+                <b>Remarks:</b> ${cols[6]}
+              `;
+            }
+          }
+
+          if (!found) output.innerHTML = "MEMBER NOT FOUND";
+        })
+        .catch(err => {
+          output.innerHTML = "ERROR LOADING DATA";
+          console.error(err);
+        });
+    }
+
+    // AUTO VERIFY FROM QR
+    window.onload = () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      if (id) {
+        document.getElementById("memberId").value = id;
+        verify(id);
+      }
+    };
+  </script>
+
+</body>
+</html>
