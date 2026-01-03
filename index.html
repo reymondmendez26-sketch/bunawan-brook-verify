@@ -77,6 +77,17 @@
     font-size: 12px;
     opacity: 0.6;
   }
+
+    a button {
+  margin-top: 10px;
+  background: #2ecc71;
+  color: #000;
+}
+
+a button:hover {
+  background: #27ae60;
+}
+
 </style>
 
 </head>
@@ -126,14 +137,23 @@
             if (cols[0] && cols[0].trim() === id) {
               found = true;
               output.innerHTML = `
-                <b>Status:</b> ${cols[5]}<br>
-                <b>Full Name:</b> ${cols[1]}<br>
-                <b>Alexis / Medusa:</b> ${cols[2]}<br>
-                <b>GT:</b> ${cols[3]}<br>
-                <b>Date Survive:</b> ${cols[4]}<br>
-                <b>Position:</b> ${cols[7]}<br>
-                <b>Remarks:</b> ${cols[6]}
-              `;
+  <b>Status:</b> ${cols[5]}<br>
+  <b>Full Name:</b> ${cols[1]}<br>
+  <b>Alexis / Medusa:</b> ${cols[2]}<br>
+  <b>GT:</b> ${cols[3]}<br>
+  <b>Date Survive:</b> ${cols[4]}<br>
+  <b>Position:</b> ${cols[7]}<br>
+  <b>Remarks:</b> ${cols[6]}<br><br>
+
+  ${cols[8] ? `<a href="${cols[8]}" target="_blank">
+    <button>View Certificate of Legitimacy</button>
+  </a>` : ""}
+
+  ${cols[9] ? `<br><br><a href="${cols[9].split("|")[0]}" target="_blank">
+    <button>View Other Certificates</button>
+  </a>` : ""}
+`;
+
             }
           }
 
@@ -157,4 +177,5 @@
   </script>
 
 </html>
+
 
