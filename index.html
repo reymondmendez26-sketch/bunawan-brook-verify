@@ -2,74 +2,85 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chapter Member Verification</title>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #eaeaea;
-  margin: 0;
-  min-height: 100vh;
-
-  display: flex;
-  align-items: center;      /* vertical center */
-  justify-content: center;  /* horizontal center */
-
-  text-align: center;
+/* RESET */
+* {
+  box-sizing: border-box;
 }
 
-/* WATERMARK LOGO (MOBILE SAFE) */
+/* PAGE */
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+/* WATERMARK LOGO */
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: url("logo.png") no-repeat center;
-  background-size: cover;
+  background-size: 80vmin;   /* auto adjust sa mobile */
   opacity: 0.12;
   z-index: -1;
 }
 
-/* MAIN CARD */
+/* MAIN CARD – FULL ON MOBILE */
 .overlay {
-  max-width: 420px;
-  margin: auto;
-  background: rgba(0,0,0,0.8);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  width: 100%;
+  max-width: 520px;
+  min-height: 85vh;          /* ← MAO NI NAGPADAKO */
+  background: rgba(0,0,0,0.82);
+  padding: 35px 25px;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.9);
   color: #fff;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
+/* TEXT */
 h1 {
-  font-size: 24px;
-  margin-bottom: 5px;
+  font-size: 26px;
+  margin-bottom: 6px;
 }
 
 h2 {
   font-size: 14px;
   font-weight: normal;
   opacity: 0.8;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
+/* INPUT */
 input {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   font-size: 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 }
 
+/* BUTTON */
 button {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   font-size: 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   background: #caa24d;
   color: #000;
@@ -80,45 +91,39 @@ button:hover {
   background: #e0b85a;
 }
 
+/* RESULT */
 #output {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.1);
+  margin-top: 25px;
+  padding: 18px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
+/* GREEN BUTTONS */
 a button {
   background: #2ecc71;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 a button:hover {
   background: #27ae60;
 }
 
+/* FOOTER */
 .footer {
-  margin-top: 20px;
+  margin-top: 25px;
   font-size: 12px;
   opacity: 0.7;
 }
 
-/* MOBILE TUNING */
-@media (max-width: 600px) {
-  body::before {
-    background-size: 160px;
-  }
-
+/* DESKTOP TWEAK */
+@media (min-width: 768px) {
   .overlay {
-  background: rgba(0, 0, 0, 0.75);
-  padding: 40px;
-  width: 90%;
-  max-width: 520px;
-  min-height: 420px;
-  border-radius: 14px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.9);
-}
+    min-height: auto;
+    padding: 40px;
+  }
 }
 </style>
 </head>
@@ -141,7 +146,8 @@ a button:hover {
 </div>
 
 <script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1NTDDp-Ow6-HTgChNrH85WpWpw80EMEA-ZpjpgYe674k/export?format=csv";
+const SHEET_URL =
+"https://docs.google.com/spreadsheets/d/1NTDDp-Ow6-HTgChNrH85WpWpw80EMEA-ZpjpgYe674k/export?format=csv";
 
 function verify(memberIdFromQR = null) {
   const input = document.getElementById("memberId");
@@ -173,8 +179,13 @@ function verify(memberIdFromQR = null) {
             <b>Position:</b> ${cols[7]}<br>
             <b>Remarks:</b> ${cols[6]}<br><br>
 
-            ${cols[8] ? `<a href="${cols[8]}" target="_blank"><button>View Certificate of Legitimacy</button></a>` : ""}
-            ${cols[9] ? `<a href="${cols[9]}" target="_blank"><button>View Other Certificates</button></a>` : ""}
+            ${cols[8] ? `<a href="${cols[8]}" target="_blank">
+              <button>View Certificate of Legitimacy</button>
+            </a>` : ""}
+
+            ${cols[9] ? `<a href="${cols[9]}" target="_blank">
+              <button>View Other Certificates</button>
+            </a>` : ""}
           `;
         }
       }
@@ -186,8 +197,16 @@ function verify(memberIdFromQR = null) {
     });
 }
 
-// AUTO VERIFY FROM QR
+/* AUTO VERIFY FROM QR */
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (id) {
+    document.getElementById("memberId").value = id;
+    verify(id);
+  }
+};
+</script>
 
-
+</body>
+</html>
