@@ -6,7 +6,6 @@
 <title>Chapter Member Verification</title>
 
 <style>
-/* RESET */
 * {
   box-sizing: border-box;
 }
@@ -20,34 +19,28 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 20px;
+  padding: 15px;
 }
 
-/* WATERMARK LOGO */
-body::before {
-  content: "";
+/* FULLSCREEN LOGO BACKGROUND */
+.bg-logo {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   inset: 0;
-  background: url("logo.png") no-repeat center;
-  background-size: cover;   /* auto adjust sa mobile */
-  opacity: 0.12;
+  background: url("logo.png") no-repeat center center;
+  background-size: contain; /* ← IMPORTANT */
+  opacity: 0.15;
   z-index: -1;
 }
 
-/* MAIN CARD – FULL ON MOBILE */
+/* MAIN CARD */
 .overlay {
   width: 100%;
   max-width: 520px;
-  min-height: 85vh;          /* ← MAO NI NAGPADAKO */
-  background: rgba(0,0,0,0.82);
+  min-height: 90vh; /* FULL LOOK SA MOBILE */
+  background: rgba(0,0,0,0.85);
   padding: 35px 25px;
   border-radius: 16px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.9);
+  box-shadow: 0 0 30px rgba(0,0,0,0.9);
   color: #fff;
 
   display: flex;
@@ -63,7 +56,6 @@ h1 {
 
 h2 {
   font-size: 14px;
-  font-weight: normal;
   opacity: 0.8;
   margin-bottom: 30px;
 }
@@ -83,8 +75,8 @@ button {
   width: 100%;
   padding: 14px;
   font-size: 16px;
-  border: none;
   border-radius: 8px;
+  border: none;
   cursor: pointer;
   background: #caa24d;
   color: #000;
@@ -95,7 +87,7 @@ button:hover {
   background: #e0b85a;
 }
 
-/* RESULT */
+/* OUTPUT */
 #output {
   margin-top: 25px;
   padding: 18px;
@@ -105,7 +97,7 @@ button:hover {
   line-height: 1.7;
 }
 
-/* GREEN BUTTONS */
+/* GREEN LINKS */
 a button {
   background: #2ecc71;
   margin-top: 12px;
@@ -122,17 +114,19 @@ a button:hover {
   opacity: 0.7;
 }
 
-/* DESKTOP TWEAK */
+/* DESKTOP */
 @media (min-width: 768px) {
   .overlay {
     min-height: auto;
-    padding: 40px;
+    padding: 45px;
   }
 }
 </style>
 </head>
 
 <body>
+
+<div class="bg-logo"></div>
 
 <div class="overlay">
   <h1>Bunawan Brook Chapter</h1>
@@ -181,15 +175,7 @@ function verify(memberIdFromQR = null) {
             <b>GT:</b> ${cols[3]}<br>
             <b>Date Survive:</b> ${cols[4]}<br>
             <b>Position:</b> ${cols[7]}<br>
-            <b>Remarks:</b> ${cols[6]}<br><br>
-
-            ${cols[8] ? `<a href="${cols[8]}" target="_blank">
-              <button>View Certificate of Legitimacy</button>
-            </a>` : ""}
-
-            ${cols[9] ? `<a href="${cols[9]}" target="_blank">
-              <button>View Other Certificates</button>
-            </a>` : ""}
+            <b>Remarks:</b> ${cols[6]}<br>
           `;
         }
       }
@@ -214,4 +200,3 @@ window.onload = () => {
 
 </body>
 </html>
-
