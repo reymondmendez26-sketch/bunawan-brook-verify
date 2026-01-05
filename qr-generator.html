@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Generator</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: #222;
+  padding: 30px;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  background: #caa24d;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #e0b85a;
+}
+
+img {
+  margin-top: 20px;
+  width: 220px;
+  height: 220px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+small {
+  display: block;
+  margin-top: 10px;
+  opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>QR Code Generator</h2>
+  <p>Enter Member ID</p>
+
+  <input type="text" id="memberId" placeholder="e.g. BBC-001">
+  <button onclick="generateQR()">Generate QR</button>
+
+  <div id="qrBox"></div>
+
+  <small>Scan QR to auto-verify member</small>
+</div>
+
+<script>
+const VERIFY_URL =
+"https://reymondmendez26-sketch.github.io/chapter-verification/";
+
+function generateQR() {
+  const id = document.getElementById("memberId").value.trim();
+  const box = document.getElementById("qrBox");
+
+  if (!id) {
+    alert("Enter Member ID");
+    return;
+  }
+
+  const finalURL = `${VERIFY_URL}?id=${encodeURIComponent(id)}`;
+
+  const qrURL =
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+    encodeURIComponent(finalURL);
+
+  box.innerHTML = `
+    <img src="${qrURL}">
+    <p><b>${id}</b></p>
+  `;
+}
+</script>
+
+</body>
+</html>
