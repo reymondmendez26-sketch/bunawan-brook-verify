@@ -6,15 +6,19 @@
 <title>Bunawan Brook | Verification</title>
 
 <style>
+*{box-sizing:border-box}
+
 body{
   margin:0;
   min-height:100vh;
+  font-family:Arial;
   background:#111;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-family:Arial;
+  padding:15px;
 }
+
 .bg-logo{
   position:fixed;
   inset:0;
@@ -22,30 +26,50 @@ body{
   opacity:.12;
   z-index:-1;
 }
-.box{
-  background:rgba(0,0,0,.88);
-  color:#fff;
-  padding:30px;
-  border-radius:16px;
-  max-width:520px;
+
+.overlay{
   width:100%;
+  max-width:520px;
+  min-height:85vh;
+  background:rgba(0,0,0,.88);
+  padding:35px 25px;
+  border-radius:16px;
+  box-shadow:0 0 30px rgba(0,0,0,.9);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
   text-align:center;
 }
-#out{
+
+h1{font-size:26px;margin-bottom:5px}
+h2{font-size:14px;opacity:.7;margin-bottom:25px}
+
+#output{
   margin-top:20px;
-  background:rgba(255,255,255,.12);
   padding:18px;
   border-radius:10px;
-  line-height:1.6;
+  background:rgba(255,255,255,.12);
+  font-size:14px;
+  line-height:1.7;
 }
-button{
+
+a button{
   width:100%;
   padding:14px;
   margin-top:12px;
-  border:none;
-  border-radius:8px;
+  font-size:16px;
   font-weight:bold;
+  border-radius:8px;
+  border:none;
   background:#2ecc71;
+  cursor:pointer;
+}
+
+.footer{
+  margin-top:25px;
+  font-size:12px;
+  opacity:.6;
 }
 </style>
 </head>
@@ -54,9 +78,16 @@ button{
 
 <div class="bg-logo"></div>
 
-<div class="box">
-  <h2>Bunawan Brook Chapter</h2>
-  <div id="out">Scanning QR…</div>
+<div class="overlay">
+  <h1>Bunawan Brook Chapter</h1>
+  <h2>Official QR Verification</h2>
+
+  <div id="output">Scanning QR…</div>
+
+  <div class="footer">
+    QR-based verification only<br>
+    Unauthorized editing is not allowed
+  </div>
 </div>
 
 <script>
@@ -64,46 +95,36 @@ const SHEET_URL =
 "https://docs.google.com/spreadsheets/d/1NTDDp-Ow6-HTgChNrH85WpWpw80EMEA-ZpjpgYe674k/gviz/tq?tqx=out:json";
 
 const params = new URLSearchParams(window.location.search);
-const encrypted = params.get("t");
+const encoded = params.get("t");
 const output = document.getElementById("output");
 
-/* Hide token from URL after load */
-if (encrypted) {
-  history.replaceState({}, document.title, window.location.pathname);
-}
-
-/* Date formatter – uses Google Sheets formatted value */
-function getCellValue(col) {
-  if (!col) return "";
-  return col.f ? col.f : col.v;
-}
-
-if (!encrypted) {
+if(!encoded){
   output.innerHTML = "INVALID OR MISSING QR CODE";
-} else {
+}else{
   let token = "";
 
-  try {
-    token = atob(encrypted).trim();
-  } catch {
+  try{
+    token = atob(encoded).trim();
+  }catch{
     output.innerHTML = "INVALID QR CODE";
-    throw new Error("Invalid QR");
+    throw "";
   }
 
   fetch(SHEET_URL)
-    .then(res => res.text())
-    .then(text => {
-      const json = JSON.parse(text.substring(47).slice(0, -2));
+    .then(res=>res.text())
+    .then(text=>{
+      const json = JSON.parse(text.substring(47).slice(0,-2));
       const rows = json.table.rows;
       let found = false;
 
-      rows.forEach(r => {
-        const c = r.c.map(getCellValue);
+      rows.forEach(r=>{
+        const c = r.c.map(col=>{
+          if(!col) return "";
+          return col.f ? col.f : col.v;
+        });
 
-        /* Column A = Token */
-        if (c[0] === token) {
+        if(c[0] === token){
           found = true;
-
           output.innerHTML = `
             <b>Status:</b> ${c[6]}<br>
             <b>Full Name:</b> ${c[2]}<br>
@@ -128,11 +149,11 @@ if (!encrypted) {
         }
       });
 
-      if (!found) {
+      if(!found){
         output.innerHTML = "MEMBER NOT FOUND / INVALID QR";
       }
     })
-    .catch(() => {
+    .catch(()=>{
       output.innerHTML = "ERROR LOADING DATA";
     });
 }
@@ -140,4 +161,3 @@ if (!encrypted) {
 
 </body>
 </html>
-
