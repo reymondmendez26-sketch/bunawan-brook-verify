@@ -7,57 +7,31 @@
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background:#111;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
 }
-
-.card {
-  background: #222;
-  padding: 30px;
-  border-radius: 14px;
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+.card{
+  background:#222;
+  padding:30px;
+  border-radius:14px;
+  width:100%;
+  max-width:420px;
+  text-align:center;
 }
-
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  margin-bottom: 12px;
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
 }
-
-button {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 8px;
-  border: none;
-  background: #caa24d;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #e0b85a;
-}
-
-img {
-  margin-top: 20px;
-  width: 220px;
-  height: 220px;
-  background: #fff;
-  padding: 10px;
-  border-radius: 12px;
-}
+button{background:#caa24d;font-weight:bold;cursor:pointer;}
+img{margin-top:20px;width:220px;background:#fff;padding:10px;border-radius:12px;}
 </style>
 </head>
 
@@ -65,12 +39,9 @@ img {
 
 <div class="card">
   <h2>QR Code Generator</h2>
-  <p>Enter Member Token</p>
-
-  <input type="text" id="memberId" placeholder="e.g. BRK-R9V2M6">
-  <button onclick="generateQR()">Generate QR</button>
-
-  <div id="qrBox"></div>
+  <input id="memberId" placeholder="e.g. BRK-001">
+  <button onclick="gen()">Generate QR</button>
+  <div id="qr"></div>
 </div>
 
 <script>
@@ -78,24 +49,15 @@ const SECRET = "BB2025";
 const VERIFY_URL =
 "https://reymondmendez26-sketch.github.io/bunawan-brook-verify/";
 
-function generateQR() {
-  const id = document.getElementById("memberId").value.trim();
-  const box = document.getElementById("qrBox");
-
-  if (!id) {
-    alert("Enter Member Token");
-    return;
-  }
+function gen(){
+  const id = memberId.value.trim();
+  if(!id) return alert("Enter ID");
 
   const encrypted = btoa(id + "|" + SECRET);
-  const finalURL = `${VERIFY_URL}?t=${encodeURIComponent(encrypted)}`;
+  const finalURL = VERIFY_URL + "?t=" + encodeURIComponent(encrypted);
 
-  const qrURL =
-    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
-    encodeURIComponent(finalURL);
-
-  box.innerHTML = `
-    <img src="${qrURL}">
+  qr.innerHTML = `
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(finalURL)}">
     <p><b>${id}</b></p>
   `;
 }
