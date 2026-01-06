@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BBC Admin Panel</title>
+
+<style>
+body{font-family:Arial;background:#111;color:#fff;padding:20px}
+.card{max-width:900px;margin:auto;background:#222;padding:20px;border-radius:14px}
+input,select,button{padding:8px;margin:5px;width:100%}
+button{background:#caa24d;font-weight:bold;cursor:pointer}
+
+/* ===== ID CARD ===== */
+#id-card{
+  width:3.375in;
+  height:2.125in;
+  background:#000 url("logo.png") no-repeat center;
+  background-size:120px;
+  color:#fff;
+  border-radius:12px;
+  padding:10px;
+  box-sizing:border-box;
+  display:none;
+  position:relative;
+}
+#id-card h3{margin:2px 0;font-size:12px}
+#id-card p{margin:2px 0;font-size:9px}
+#qr{position:absolute;bottom:8px;right:8px;width:70px}
+@media print{
+  body *{visibility:hidden}
+  #id-card,#id-card *{visibility:visible}
+  #id-card{position:absolute;left:0;top:0}
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>BBC Admin Panel</h2>
+
+<input id="token" placeholder="Token (or generate)">
+<button onclick="genToken()">Generate Token</button>
+
+<input id="fullname" placeholder="Full Name">
+<input id="alias" placeholder="Alexis / Medusa">
+<input id="position" placeholder="Position">
+<select id="status">
+  <option>ACTIVE</option>
+  <option>SUSPENDED</option>
+  <option>EXPELLED</option>
+</select>
+
+<button onclick="generateID()">Generate ID Layout</button>
+<button onclick="window.print()">Print ID</button>
+</div>
+
+<br>
+
+<!-- ===== ID CARD ===== -->
+<div id="id-card">
+  <h3 id="name"></h3>
+  <p id="aliasTxt"></p>
+  <p id="posTxt"></p>
+  <p id="statusTxt"></p>
+  <img id="qr">
+</div>
+
+<script>
+const VERIFY_URL =
+"https://reymondmendez26-sketch.github.io/bunawan-brook-verify/";
+
+function genToken(){
+  token.value = crypto.randomUUID().split("-")[0].toUpperCase();
+}
+
+function generateID(){
+  if(!token.value){alert("Token required");return;}
+
+  const enc = btoa(token.value.trim().toUpperCase());
+  const url = `${VERIFY_URL}?t=${enc}`;
+  const qrURL =
+    "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
+    encodeURIComponent(url);
+
+  document.getElementById("name").innerText = fullname.value;
+  document.getElementById("aliasTxt").innerText = alias.value;
+  document.getElementById("posTxt").innerText = position.value;
+  document.getElementById("statusTxt").innerText = status.value;
+  document.getElementById("qr").src = qrURL;
+
+  document.getElementById("id-card").style.display="block";
+}
+</script>
+
+</body>
+</html>
