@@ -1,180 +1,243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Add / Edit Member</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Add / Edit Member</title>
 
 <style>
-body{
-  margin:0;
+body {
+  font-family: Arial, sans-serif;
   background:#111;
   color:#fff;
-  font-family:Arial;
+  margin:0;
   padding:20px;
 }
-.container{
-  max-width:600px;
+
+.card {
+  max-width:520px;
   margin:auto;
-  background:#222;
+  background:#1c1c1c;
   padding:25px;
   border-radius:14px;
+  box-shadow:0 0 20px rgba(0,0,0,.8);
 }
-h2{text-align:center}
-input,select,textarea,button{
+
+label {
+  display:block;
+  margin-top:14px;
+  font-size:14px;
+  opacity:.8;
+}
+
+input, select, textarea, button {
   width:100%;
+  margin-top:6px;
   padding:12px;
-  margin:8px 0;
   border-radius:8px;
   border:none;
-  font-size:14px;
+  font-size:15px;
 }
-button{
-  background:#caa24d;
+
+textarea {
+  resize:vertical;
+  min-height:70px;
+}
+
+button {
+  margin-top:18px;
   font-weight:bold;
+  background:#caa24d;
   cursor:pointer;
 }
-textarea{resize:vertical}
-label{font-size:13px;opacity:.8}
+
+button:hover { background:#e0b85a; }
+
+.secondary {
+  background:#2ecc71;
+  margin-top:10px;
+}
+
+.secondary:hover { background:#27ae60; }
+
+.viewBtn {
+  background:#3498db;
+}
+
+.hidden { display:none; }
+
+small {
+  opacity:.6;
+}
 </style>
 </head>
 
 <body>
 
-<script>
-if(sessionStorage.getItem("bbc_admin")!=="true"){
-  window.location.href="admin-login.html";
-}
-</script>
+<div class="card">
+  <h2 id="title">Add Member</h2>
 
-<div class="container">
-<h2 id="title">Add Member</h2>
+  <label>Full Name</label>
+  <input id="fullname">
 
-<label>Full Name</label>
-<input id="fullname">
+  <label>Alexis / Medusa Name</label>
+  <input id="alexis">
 
-<label>Alexis / Medusa Name</label>
-<input id="alexis">
+  <label>GT</label>
+  <input id="gt">
 
-<label>Date Survive</label>
-<input type="date" id="date">
+  <label>Date Survive</label>
+  <input type="date" id="date">
 
-<label>Status</label>
-<select id="status">
-  <option>ACTIVE</option>
-  <option>INACTIVE</option>
-  <option>SUSPENDED</option>
-  <option>EXPELLED</option>
-</select>
+  <label>Status</label>
+  <select id="status">
+    <option>ACTIVE</option>
+    <option>INACTIVE</option>
+  </select>
 
-<label>Position</label>
-<select id="position">
-  <option>Current GT</option>
-  <option>Former GT</option>
-  <option>Organizer</option>
-  <option>MKS</option>
-  <option>MKC</option>
-  <option>Member</option>
-  <option>Adviser</option>
-  <option>7 Master</option>
-</select>
+  <label>Position</label>
+  <select id="position">
+    <option>Current GT</option>
+    <option>Former GT</option>
+    <option>Organizer</option>
+    <option>MKS</option>
+    <option>MKC</option>
+    <option>Member</option>
+    <option>Adviser</option>
+    <option>7 Master</option>
+  </select>
 
-<label>Remarks</label>
-<textarea id="remarks"></textarea>
+  <label>Remarks</label>
+  <textarea id="remarks"></textarea>
 
-<label>Photo</label>
-<input type="file" id="photo">
+  <label>Photo</label>
+  <input type="file" id="photo" accept="image/*">
 
-<label>Certificate of Legitimacy (PDF/JPG/PNG)</label>
-<input type="file" id="col">
+  <label>Certificate of Legitimacy</label>
+  <input type="file" id="col" accept=".pdf,.jpg,.png">
 
-<label>Other Certificates (Multiple)</label>
-<input type="file" id="others" multiple>
+  <button id="viewCOL" class="viewBtn hidden">View Certificate of Legitimacy</button>
 
-<button onclick="save()">Save Member</button>
-<button onclick="generateID()">Generate ID</button>
+  <label>Other Certificates</label>
+  <input type="file" id="others" multiple accept=".pdf,.jpg,.png">
+
+  <button id="viewOthers" class="viewBtn hidden">View Other Certificates</button>
+
+  <button onclick="save()">Save Member</button>
+  <button class="secondary" onclick="generateID()">Generate ID</button>
+
+  <small id="msg"></small>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzm9kXBRRFWT60ngW0VjQoDZba4ynjrE2E1Cw23Ybb1783FuTLl7P9K6mrrYZS3gwg_/exec";
-const params = new URLSearchParams(window.location.search);
-const mode = params.get("mode");
-const token = params.get("t");
 
-if(mode==="edit"){
-  document.getElementById("title").innerText="Edit Member";
+const params = new URLSearchParams(location.search);
+const mode = params.get("mode") || "add";
+const token = params.get("token") || "";
+
+const el = id => document.getElementById(id);
+
+const fullname = el("fullname");
+const alexis   = el("alexis");
+const gt       = el("gt");
+const date     = el("date");
+const status   = el("status");
+const position = el("position");
+const remarks  = el("remarks");
+const photo    = el("photo");
+const col      = el("col");
+const others   = el("others");
+const msg      = el("msg");
+const viewCOL  = el("viewCOL");
+const viewOthers = el("viewOthers");
+
+if(mode === "edit"){
+  el("title").innerText = "Edit Member";
   loadMember();
 }
 
 function loadMember(){
   fetch(API_URL,{
     method:"POST",
-    body:JSON.stringify({
-      action:"getMember",
-      token: token
-    })
+    body:JSON.stringify({ action:"getMember", token })
   })
   .then(r=>r.json())
   .then(m=>{
-    if(!m || !m.fullname){
-      alert("Failed to load member");
-      return;
+    fullname.value = m.fullname || "";
+    alexis.value   = m.alexis || "";
+    gt.value       = m.gt || "";
+    date.value     = m.date || "";
+    status.value   = m.status || "ACTIVE";
+    position.value = m.position || "";
+    remarks.value  = m.remarks || "";
+
+    if(m.col){
+      viewCOL.classList.remove("hidden");
+      viewCOL.onclick = ()=>window.open(m.col);
     }
 
-    document.getElementById("fullname").value = m.fullname || "";
-    document.getElementById("alexis").value   = m.alexis || "";
-    document.getElementById("date").value     = m.date || "";
-    document.getElementById("status").value   = m.status || "ACTIVE";
-    document.getElementById("position").value = m.position || "Member";
-    document.getElementById("remarks").value  = m.remarks || "";
+    if(m.others){
+      viewOthers.classList.remove("hidden");
+      viewOthers.onclick = ()=>{
+        m.others.split("|").forEach(l=>window.open(l));
+      };
+    }
   });
 }
 
-function save(){
-  const photoFile = document.getElementById("photo").files[0];
-
-  if(photoFile){
-    const reader = new FileReader();
-    reader.onload = function(){
-      submit(reader.result);
-    };
-    reader.readAsDataURL(photoFile);
-  } else {
-    submit("");
-  }
+function readFile(file){
+  return new Promise(res=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.readAsDataURL(file);
+  });
 }
 
-function submit(photoBase64){
+async function save(){
+  msg.innerText = "Saving…";
+
+  let photo64 = "";
+  let col64 = "";
+  let other64 = [];
+
+  if(photo.files[0]) photo64 = await readFile(photo.files[0]);
+  if(col.files[0]) col64 = await readFile(col.files[0]);
+
+  if(others.files.length){
+    for(let f of others.files){
+      other64.push(await readFile(f));
+    }
+  }
+
   fetch(API_URL,{
     method:"POST",
     body:JSON.stringify({
       action:"saveMember",
-      mode:mode,
-      token:token,
+      mode,
+      token,
       fullname:fullname.value,
       alexis:alexis.value,
+      gt:gt.value,
       date:date.value,
       status:status.value,
       position:position.value,
       remarks:remarks.value,
-      photoBase64: photoBase64
+      photoBase64:photo64,
+      colBase64:col64,
+      otherCerts:other64.join("|")
     })
   })
   .then(r=>r.json())
   .then(res=>{
-    alert(res.success ? "Saved" : "Error");
-    if(res.success) window.location.href="admin-dashboard.html";
+    msg.innerText = res.success ? "Saved successfully" : "Error saving";
+    if(res.success) setTimeout(()=>location.href="admin-dashboard.html",1200);
   });
 }
-  
-function generateID(){
-  if(!token){
-    alert("Please save the member first");
-    return;
-  }
-  window.location.href = "admin-id.html?t=" + encodeURIComponent(token);
-}
 
+function generateID(){
+  alert("ID generation next step");
+}
 </script>
 
 </body>
