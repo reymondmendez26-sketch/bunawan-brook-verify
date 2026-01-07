@@ -3,33 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin | Add / Edit Member</title>
+<title>Admin | Member</title>
 
 <style>
 body {
   font-family: Arial, sans-serif;
   background:#111;
   color:#fff;
-  margin:0;
   padding:20px;
 }
-
 .card {
-  max-width:520px;
+  max-width:540px;
   margin:auto;
-  background:#1c1c1c;
+  background:#1e1e1e;
   padding:25px;
   border-radius:14px;
-  box-shadow:0 0 20px rgba(0,0,0,.8);
+  box-shadow:0 0 25px rgba(0,0,0,.8);
 }
-
 label {
   display:block;
-  margin-top:14px;
+  margin-top:12px;
   font-size:14px;
   opacity:.8;
 }
-
 input, select, textarea, button {
   width:100%;
   margin-top:6px;
@@ -38,37 +34,18 @@ input, select, textarea, button {
   border:none;
   font-size:15px;
 }
-
-textarea {
-  resize:vertical;
-  min-height:70px;
-}
-
+textarea { min-height:70px; }
 button {
   margin-top:18px;
-  font-weight:bold;
   background:#caa24d;
+  font-weight:bold;
   cursor:pointer;
 }
-
 button:hover { background:#e0b85a; }
-
-.secondary {
-  background:#2ecc71;
-  margin-top:10px;
-}
-
-.secondary:hover { background:#27ae60; }
-
-.viewBtn {
-  background:#3498db;
-}
-
+.secondary { background:#2ecc71; }
+.viewBtn { background:#3498db; margin-top:10px; }
 .hidden { display:none; }
-
-small {
-  opacity:.6;
-}
+small { opacity:.6; }
 </style>
 </head>
 
@@ -115,127 +92,118 @@ small {
 
   <label>Certificate of Legitimacy</label>
   <input type="file" id="col" accept=".pdf,.jpg,.png">
-
-  <button id="viewCOL" class="viewBtn hidden">View Certificate of Legitimacy</button>
+  <button id="viewCOL" class="viewBtn hidden">View COL</button>
 
   <label>Other Certificates</label>
   <input type="file" id="others" multiple accept=".pdf,.jpg,.png">
-
   <button id="viewOthers" class="viewBtn hidden">View Other Certificates</button>
 
-  <button onclick="save()">Save Member</button>
+  <button onclick="saveMember()">Save Member</button>
   <button class="secondary" onclick="generateID()">Generate ID</button>
 
   <small id="msg"></small>
 </div>
 
 <script>
+/* 🔴 IMPORTANT: PUT YOUR REAL WEB APP URL HERE */
 const API_URL = "https://script.google.com/macros/s/AKfycbzm9kXBRRFWT60ngW0VjQoDZba4ynjrE2E1Cw23Ybb1783FuTLl7P9K6mrrYZS3gwg_/exec";
 
-const params = new URLSearchParams(location.search);
-const mode = params.get("mode") || "add";
-const token = params.get("token") || "";
+const qs = new URLSearchParams(location.search);
+const mode = qs.get("mode") || "add";
+const token = qs.get("token") || "";
 
-const el = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
+const msg = $("msg");
 
-const fullname = el("fullname");
-const alexis   = el("alexis");
-const gt       = el("gt");
-const date     = el("date");
-const status   = el("status");
-const position = el("position");
-const remarks  = el("remarks");
-const photo    = el("photo");
-const col      = el("col");
-const others   = el("others");
-const msg      = el("msg");
-const viewCOL  = el("viewCOL");
-const viewOthers = el("viewOthers");
-
-if(mode === "edit"){
-  el("title").innerText = "Edit Member";
+if (mode === "edit") {
+  $("title").innerText = "Edit Member";
   loadMember();
 }
 
-function loadMember(){
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({ action:"getMember", token })
+function loadMember() {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "getMember", token })
   })
-  .then(r=>r.json())
-  .then(m=>{
-    fullname.value = m.fullname || "";
-    alexis.value   = m.alexis || "";
-    gt.value       = m.gt || "";
-    date.value     = m.date || "";
-    status.value   = m.status || "ACTIVE";
-    position.value = m.position || "";
-    remarks.value  = m.remarks || "";
+  .then(r => r.json())
+  .then(m => {
+    $("fullname").value = m.fullname || "";
+    $("alexis").value   = m.alexis || "";
+    $("gt").value       = m.gt || "";
+    $("date").value     = m.date || "";
+    $("status").value   = m.status || "ACTIVE";
+    $("position").value = m.position || "";
+    $("remarks").value  = m.remarks || "";
 
-    if(m.col){
-      viewCOL.classList.remove("hidden");
-      viewCOL.onclick = ()=>window.open(m.col);
+    if (m.col) {
+      $("viewCOL").classList.remove("hidden");
+      $("viewCOL").onclick = () => window.open(m.col);
     }
 
-    if(m.others){
-      viewOthers.classList.remove("hidden");
-      viewOthers.onclick = ()=>{
-        m.others.split("|").forEach(l=>window.open(l));
-      };
+    if (m.others) {
+      $("viewOthers").classList.remove("hidden");
+      $("viewOthers").onclick = () =>
+        m.others.split("|").forEach(l => window.open(l));
     }
-  });
+  })
+  .catch(() => alert("Failed to load member"));
 }
 
-function readFile(file){
-  return new Promise(res=>{
+function readFile(file) {
+  return new Promise(res => {
     const r = new FileReader();
-    r.onload = ()=>res(r.result);
+    r.onload = () => res(r.result);
     r.readAsDataURL(file);
   });
 }
 
-async function save(){
-  msg.innerText = "Saving…";
+async function saveMember() {
+  msg.innerText = "Saving...";
 
   let photo64 = "";
   let col64 = "";
   let other64 = [];
 
-  if(photo.files[0]) photo64 = await readFile(photo.files[0]);
-  if(col.files[0]) col64 = await readFile(col.files[0]);
+  if ($("photo").files[0]) photo64 = await readFile($("photo").files[0]);
+  if ($("col").files[0]) col64 = await readFile($("col").files[0]);
 
-  if(others.files.length){
-    for(let f of others.files){
+  if ($("others").files.length) {
+    for (let f of $("others").files) {
       other64.push(await readFile(f));
     }
   }
 
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"saveMember",
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "saveMember",
       mode,
       token,
-      fullname:fullname.value,
-      alexis:alexis.value,
-      gt:gt.value,
-      date:date.value,
-      status:status.value,
-      position:position.value,
-      remarks:remarks.value,
-      photoBase64:photo64,
-      colURL:col64,
-      otherCerts:other64.join("|")
+      fullname: $("fullname").value,
+      alexis: $("alexis").value,
+      gt: $("gt").value,
+      date: $("date").value,
+      status: $("status").value,
+      position: $("position").value,
+      remarks: $("remarks").value,
+      photoBase64: photo64,
+      colURL: col64,
+      otherCerts: other64.join("|")
     })
   })
-  .then(r=>r.json())
-  .then(res=>{
-    msg.innerText = res.success ? "Saved successfully" : "Error saving";
-    if(res.success) setTimeout(()=>location.href="admin-dashboard.html",1200);
-  });
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      msg.innerText = "Saved successfully";
+      setTimeout(() => location.href = "admin-dashboard.html", 1200);
+    } else {
+      msg.innerText = "Error saving";
+    }
+  })
+  .catch(() => msg.innerText = "Connection error");
 }
 
-function generateID(){
+function generateID() {
   alert("ID generation next step");
 }
 </script>
