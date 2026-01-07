@@ -1,1 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#111;
+  color:#fff;
+  padding:20px;
+}
+
+.top-bar{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+input,button{
+  padding:10px;
+  border-radius:6px;
+  border:none;
+  font-size:14px;
+}
+
+button{
+  background:#caa24d;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#222;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+th,td{
+  padding:12px;
+  border-bottom:1px solid #333;
+  text-align:left;
+  font-size:14px;
+}
+
+th{background:#2a2a2a}
+tr:hover{background:#333;cursor:pointer}
+tr.selected{background:#444}
+
+.actions{
+  margin-top:15px;
+  display:flex;
+  gap:10px;
+}
+</style>
+</head>
+
+<body>
+
+<script>
+/* 🔐 SESSION CHECK */
+if(sessionStorage.getItem("bbc_admin")!=="true"){
+  window.location.href="admin-login.html";
+}
+</script>
+
+<h2>Admin Dashboard</h2>
+
+<div class="top-bar">
+  <input id="search" placeholder="Search name / ID / status" oninput="render()">
+  <button onclick="addMember()">Add Member</button>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Member ID</th>
+  <th>Full Name</th>
+  <th>Status</th>
+  <th>Position</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<div class="actions">
+  <button id="editBtn" onclick="editMember()" style="display:none">Edit Member</button>
+</div>
+
+<script>
+/* 🔴 SAME WEB APP URL */
+const API_URL = "https://script.google.com/macros/s/AKfycbxWoMjQPVz041EHaiV_ejO9gkxqTrFdnUXArGU6hEfWJvoFOb0YihacV41v69e-bo1R/exec";
+
+let members = [];
+let selectedIndex = -1;
+
+/* LOAD MEMBERS */
+fetch(API_URL,{
+  method:"POST",
+  body:JSON.stringify({
+    action:"list",
+    password:prompt("Confirm admin password")
+  })
+})
+.then(r=>r.json())
+.then(res=>{
+  if(!res.success){
+    alert("Unauthorized");
+    window.location.href="admin-login.html";
+    return;
+  }
+  members = res.members;
+  render();
+});
+
+/* RENDER TABLE */
+function render(){
+  const q = search.value.toLowerCase();
+  tbody.innerHTML = "";
+  selectedIndex = -1;
+  editBtn.style.display="none";
+
+  members.forEach((m,i)=>{
+    if(
+      m.memberId.toLowerCase().includes(q) ||
+      m.fullname.toLowerCase().includes(q) ||
+      m.status.toLowerCase().includes(q)
+    ){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${m.memberId}</td>
+        <td>${m.fullname}</td>
+        <td>${m.status}</td>
+        <td>${m.position}</td>
+      `;
+      tr.onclick=()=>{
+        document.querySelectorAll("tr").forEach(r=>r.classList.remove("selected"));
+        tr.classList.add("selected");
+        selectedIndex = i;
+        editBtn.style.display="inline-block";
+      };
+      tbody.appendChild(tr);
+    }
+  });
+}
+
+/* ACTIONS */
+function addMember(){
+  window.location.href="admin-member.html?mode=add";
+}
+
+function editMember(){
+  if(selectedIndex<0)return;
+  const token = members[selectedIndex].token;
+  window.location.href="admin-member.html?mode=edit&t="+encodeURIComponent(token);
+}
+</script>
+
+</body>
+</html>
 
