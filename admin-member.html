@@ -153,8 +153,13 @@ function save(){
 }
 
 function generateID(){
-  alert("ID generation next step");
+  if(!token){
+    alert("Please save the member first");
+    return;
+  }
+  window.location.href = "admin-id.html?t=" + encodeURIComponent(token);
 }
+
 </script>
 
 </body>
