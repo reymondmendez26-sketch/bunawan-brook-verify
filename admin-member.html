@@ -131,6 +131,20 @@ function loadMember(){
 }
 
 function save(){
+  const photoFile = document.getElementById("photo").files[0];
+
+  if(photoFile){
+    const reader = new FileReader();
+    reader.onload = function(){
+      submit(reader.result);
+    };
+    reader.readAsDataURL(photoFile);
+  } else {
+    submit("");
+  }
+}
+
+function submit(photoBase64){
   fetch(API_URL,{
     method:"POST",
     body:JSON.stringify({
@@ -142,16 +156,17 @@ function save(){
       date:date.value,
       status:status.value,
       position:position.value,
-      remarks:remarks.value
+      remarks:remarks.value,
+      photoBase64: photoBase64
     })
   })
   .then(r=>r.json())
   .then(res=>{
-    alert(res.success?"Saved":"Error");
+    alert(res.success ? "Saved" : "Error");
     if(res.success) window.location.href="admin-dashboard.html";
   });
 }
-
+  
 function generateID(){
   if(!token){
     alert("Please save the member first");
