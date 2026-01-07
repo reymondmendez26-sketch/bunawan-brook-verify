@@ -1,73 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>BBC Admin Panel</title>
+
 <style>
-body{font-family:Arial;background:#111;color:#fff;padding:20px}
-input,select,button{width:100%;padding:10px;margin:6px 0}
-button{background:#caa24d;font-weight:bold}
-.card{max-width:420px;margin:auto;background:#222;padding:20px;border-radius:12px}
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+  padding: 20px;
+}
+
+.card {
+  max-width: 900px;
+  margin: auto;
+  background: #222;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: none;
+}
+
+button {
+  background: #caa24d;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ===== ID CARD ===== */
+#id-card {
+  width: 3.375in;
+  height: 2.125in;
+  background: #000 url("logo.png") no-repeat center;
+  background-size: 120px;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  position: relative;
+  display: none;
+}
+
+#photo {
+  width: 70px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+#qr {
+  width: 70px;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+h3 { margin: 4px 0; font-size: 12px; }
+p { margin: 2px 0; font-size: 9px; }
+
+@media print {
+  body * { visibility: hidden; }
+  #id-card, #id-card * { visibility: visible; }
+  #id-card { position: absolute; left: 0; top: 0; }
+}
 </style>
 </head>
 
 <body>
-<div class="card">
-<h2>Admin Panel</h2>
 
-<input id="password" placeholder="Admin Password" type="password">
+<div class="card">
+<h2>BBC Admin Panel</h2>
+
+<input type="password" id="password" placeholder="Admin Password">
 
 <input id="token" placeholder="Token">
+<button onclick="generateToken()">Generate Token</button>
+
 <input id="memberId" placeholder="Member ID">
 <input id="fullname" placeholder="Full Name">
 <input id="alias" placeholder="Alexis / Medusa">
-<input id="gt" placeholder="GT">
-<input id="date" type="date">
+<input id="position" placeholder="Position">
+
 <select id="status">
   <option>ACTIVE</option>
-  <option>INACTIVE</option>
   <option>SUSPENDED</option>
   <option>EXPELLED</option>
 </select>
-<input id="remarks" placeholder="Remarks">
-<input id="position" placeholder="Position">
-<input id="cert" placeholder="Certificate URL">
-<input id="other" placeholder="Other Certs (URL1|URL2)">
 
-<button onclick="add()">Add Member</button>
-<button onclick="update()">Update Member</button>
+<input type="file" id="photoInput" accept="image/*">
+
+<button onclick="generateID()">Generate ID</button>
+<button onclick="window.print()">Print ID</button>
 
 <p id="msg"></p>
 </div>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzzBKLLn-le3L48kgmOizDUTz43_upPaeftk0el75kkFH1DfMoDAqCeSyY0HRgCM8Ek/exec";
+<br>
 
-function send(action){
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action,
-      password:password.value,
-      token:token.value.trim(),
-      memberId:memberId.value,
-      fullname:fullname.value,
-      alias:alias.value,
-      gt:gt.value,
-      dateSurvive:date.value,
-      status:status.value,
-      remarks:remarks.value,
-      position:position.value,
-      cert:cert.value,
-      otherCerts:other.value
-    })
-  }).then(r=>r.json()).then(d=>{
-    msg.innerText = d.success ? "SUCCESS" : d.msg;
-  });
+<div id="id-card">
+  <img id="photo">
+  <h3 id="name"></h3>
+  <p id="aliasTxt"></p>
+  <p id="posTxt"></p>
+  <p id="statusTxt"></p>
+  <img id="qr">
+</div>
+
+<script>
+const VERIFY_URL =
+"https://reymondmendez26-sketch.github.io/bunawan-brook-verify/";
+
+// 🔴 ILISI NI SA IMO WEB APP URL
+const API_URL = "PASTE_WEB_APP_URL_HERE";
+
+let photoBase64 = "";
+
+photoInput.onchange = () => {
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoBase64 = e.target.result.split(",")[1];
+  };
+  reader.readAsDataURL(photoInput.files[0]);
+};
+
+function generateToken() {
+  token.value = crypto.randomUUID().split("-")[0].toUpperCase();
 }
 
-function add(){ send("add"); }
-function update(){ send("update"); }
+function generateID() {
+  if (!token.value) {
+    alert("Token required");
+    return;
+  }
+
+  const encoded = btoa(token.value.trim());
+  const verifyURL = `${VERIFY_URL}?t=${encoded}`;
+  const qrURL =
+    "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
+    encodeURIComponent(verifyURL);
+
+  name.innerText = fullname.value;
+  aliasTxt.innerText = alias.value;
+  posTxt.innerText = position.value;
+  statusTxt.innerText = status.value;
+  qr.src = qrURL;
+
+  if (photoBase64) {
+    photo.src = "data:image/png;base64," + photoBase64;
+  }
+
+  document.getElementById("id-card").style.display = "block";
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      password: password.value,
+      token: token.value,
+      memberId: memberId.value,
+      fullname: fullname.value,
+      alias: alias.value,
+      position: position.value,
+      status: status.value,
+      photoBase64: photoBase64
+    })
+  });
+}
 </script>
+
 </body>
 </html>
